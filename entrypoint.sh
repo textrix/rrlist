@@ -81,7 +81,7 @@ npm install
 npx prisma generate
 
 # Check if database exists, if not create it and seed
-if [ ! -f "./dev.db" ]; then
+if [ ! -f "./prisma/dev.db" ]; then
   echo "🗄️  Database not found, creating and seeding..."
   npx prisma db push
   

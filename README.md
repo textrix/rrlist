@@ -10,6 +10,7 @@ Cloud Storage File Browser with Authentication & Real-time Monitoring
 
 ### Key Features
 - **Multi-Cloud Support**: Browse files across 70+ cloud storage providers via rclone
+- **File Download**: Single file download with optimized streaming performance
 - **User Authentication**: Secure login system with NextAuth.js
 - **Real-time Monitoring**: Live storage usage updates via Server-Sent Events
 - **Permission Management**: User roles and access control system
@@ -64,6 +65,7 @@ docker compose up rrlist -d
 ### Container Features
 - **User Management**: Proper UID/GID matching for file permissions
 - **rclone Integration**: Background daemon with health monitoring
+- **Auto Storage Monitoring**: Automatic background storage collection on startup
 - **Config Sync**: Automatic token refresh synchronization
 - **Log Rotation**: Size-limited logging (10MB × 3 files)
 - **Timezone Support**: Configurable via `TZ` environment variable
@@ -108,6 +110,7 @@ RCLONE_RC_PASS=""
 │   │   │   ├── auth/           # Authentication endpoints
 │   │   │   └── rclone/         # rclone RC API proxy
 │   │   │       ├── files/      # File operations
+│   │   │       ├── download/   # File download endpoint
 │   │   │       ├── remotes/    # Remote storage listing
 │   │   │       ├── storage/    # Storage usage monitoring
 │   │   │       └── check/      # Health checks
@@ -138,11 +141,13 @@ RCLONE_RC_PASS=""
 ### ✅ File Browser
 - Multi-cloud storage support via rclone
 - Real-time file listing and navigation
+- Single file download with streaming support
 - Storage usage monitoring with live updates
 - Health status checking for all remotes
 
 ### ✅ Real-time Monitoring
 - Server-Sent Events for live storage updates
+- Automatic background storage polling on server startup
 - Background storage polling (5-minute intervals)
 - Automatic error detection and reporting
 - Connection status indicators
@@ -197,8 +202,9 @@ docker restart rrlist-dev
 ## Monitoring & Logs
 
 ### Storage Monitoring
+- Automatic startup background storage collection
 - Real-time storage usage via `/api/rclone/storage/stream`
-- Background polling every 5 minutes
+- Background polling every 5 minutes with retry logic
 - Concurrent storage checks (5 remotes at once)
 - Error detection and reporting
 
