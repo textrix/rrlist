@@ -44,8 +44,8 @@ cp /config/rclone.conf /tmp/rclone.conf
 chown appuser:appgroup /tmp/rclone.conf
 chmod 600 /tmp/rclone.conf
 
-# Start rclone daemon in background as appuser using /tmp config
-su appuser -c "rclone rcd --rc-addr=127.0.0.1:5572 --rc-no-auth --config=/tmp/rclone.conf" &
+# Start rclone daemon in background as appuser using /tmp config with file serving
+su appuser -c "rclone rcd --rc-addr=127.0.0.1:5572 --rc-no-auth --rc-serve --config=/tmp/rclone.conf" &
 
 # Wait for rclone daemon to be ready
 echo "Waiting for rclone daemon to start..."

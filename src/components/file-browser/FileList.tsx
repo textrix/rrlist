@@ -13,6 +13,8 @@ interface FileListProps {
   selectedFiles: Set<string>;
   onFileSelect: (file: FileItem, selected: boolean) => void;
   onSelectAll: (selected: boolean) => void;
+  currentRemote: string;
+  currentPath: string;
 }
 
 function getFileIcon(file: FileItem) {
@@ -105,11 +107,62 @@ function formatDate(dateString?: string) {
   }
 }
 
-export default function FileList({ files, onFileClick, onFileDoubleClick, selectedFiles, onFileSelect, onSelectAll }: FileListProps) {
+export default function FileList({ 
+  files, 
+  onFileClick, 
+  onFileDoubleClick, 
+  selectedFiles, 
+  onFileSelect, 
+  onSelectAll,
+  currentRemote,
+  currentPath
+}: FileListProps) {
   const hasSelectedFiles = selectedFiles.size > 0;
   const [sortField, setSortField] = useState<SortField>('name');
   const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
   const [lastClickedIndex, setLastClickedIndex] = useState<number>(-1);
+  const [downloadingFiles, setDownloadingFiles] = useState<Set<string>>(new Set());
+
+  const handleDownload = async (file: FileItem) => {
+    if (file.IsDir) return; // 폴더는 다운로드할 수 없음
+    
+    const fileKey = `${currentRemote}:${file.Path}`;
+    setDownloadingFiles(prev => new Set([...prev, fileKey]));
+    
+    try {
+      // Construct full path: currentPath + fileName
+      const fullPath = currentPath ? `${currentPath.replace(/\/+$/, '')}/${file.Name}` : file.Name;
+      const downloadUrl = `/api/rclone/download?remote=${encodeURIComponent(currentRemote)}&path=${encodeURIComponent(fullPath)}`;
+      
+      console.log(`Download URL: ${downloadUrl}`);
+      
+      // Create hidden link and trigger download
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = file.Name;
+      link.style.display = 'none';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Remove loading state after a short delay
+      setTimeout(() => {
+        setDownloadingFiles(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(fileKey);
+          return newSet;
+        });
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Download failed:', error);
+      setDownloadingFiles(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(fileKey);
+        return newSet;
+      });
+    }
+  };
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -292,16 +345,23 @@ export default function FileList({ files, onFileClick, onFileDoubleClick, select
                 
                 {!file.IsDir && (
                   <button 
-                    className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors"
+                    className="p-1.5 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={(e) => {
                       e.stopPropagation();
-                      console.log('Download:', file.Name);
+                      handleDownload(file);
                     }}
-                    title="Download"
+                    disabled={downloadingFiles.has(`${currentRemote}:${file.Path}`)}
+                    title={downloadingFiles.has(`${currentRemote}:${file.Path}`) ? "Downloading..." : "Download"}
                   >
-                    <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
+                    {downloadingFiles.has(`${currentRemote}:${file.Path}`) ? (
+                      <svg className="w-4 h-4 text-blue-500 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    )}
                   </button>
                 )}
                 

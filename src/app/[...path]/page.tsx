@@ -428,6 +428,8 @@ export default function FileBrowser({ params }: Props) {
                     selectedFiles={selectedFiles}
                     onFileSelect={handleFileSelect}
                     onSelectAll={handleSelectAll}
+                    currentRemote={selectedRemote || ''}
+                    currentPath={currentPath}
                   />
                 </div>
               )}

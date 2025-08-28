@@ -409,6 +409,8 @@ export default function FileBrowser() {
                     selectedFiles={selectedFiles}
                     onFileSelect={handleFileSelect}
                     onSelectAll={handleSelectAll}
+                    currentRemote={selectedRemote || ''}
+                    currentPath={currentPath}
                   />
                 </div>
               )}
