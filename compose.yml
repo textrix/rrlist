@@ -1,0 +1,54 @@
+services:
+  # Production service
+  rrlist:
+    build: .
+    ports:
+      - "3003:3003"
+    volumes:
+      - ~/.config/rclone/rclone.conf:/config/rclone.conf:ro
+      - rrlist-data:/data
+    environment:
+      - NODE_ENV=production
+      - TZ=Asia/Seoul
+    restart: unless-stopped
+    container_name: rrlist-app
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Development service for dev container
+  rrlist-dev:
+    image: node:18-alpine
+    working_dir: /app
+    ports:
+      - "3003:3003"
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - ~/.config/rclone/rclone.conf:/config/rclone.conf
+    environment:
+      - NODE_ENV=development
+      - TZ=Asia/Seoul
+    command: ["sh", "/app/entrypoint.sh"]
+    container_name: rrlist-dev
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  rrlist-data:
+
+  # Optional: Add a reverse proxy (nginx)
+  # nginx:
+  #   image: nginx:alpine
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #   depends_on:
+  #     - rrlist
+  #   restart: unless-stopped
