@@ -1,0 +1,25 @@
+{
+  "name": "RRList Development",
+  "dockerComposeFile": "../compose.yml",
+  "service": "rrlist-dev",
+  "workspaceFolder": "/app",
+  "shutdownAction": "stopCompose",
+  "forwardPorts": [3003],
+  "portsAttributes": {
+    "3003": {
+      "label": "Next.js Dev Server",
+      "onAutoForward": "notify"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "vscode.typescript-language-features"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "typescript.preferences.includePackageJsonAutoImports": "auto"
+      }
+    }
+  }
+}
